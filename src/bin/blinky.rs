@@ -15,21 +15,19 @@ fn main() -> ! {
 
     if let Some(p) = pac::Peripherals::take() {
         // Set pin 0 as output
-        p.gpio0.px_dir().write(|w| unsafe { w.bits(1 << 0) });
+        p.gpio0.px_dir().write(|w| w.pin0().output());
 
         // Connect pull down on pin 0
-        p.gpio0.px_pud().write(|w| unsafe { w.bits(1 << 0) });
+        p.gpio0.px_pud().write(|w| w.pin0().pull_down());
 
         // Enable pull on pin 0
-        p.gpio0.px_pull().write(|w| unsafe { w.bits(1 << 0) });
+        p.gpio0.px_pull().write(|w| w.pin0().enable());
 
         loop {
-            let out = p.gpio0.px_dout().read().bits() & (1 << 0);
-
-            if out == 0 {
-                p.gpio0.px_dout().modify(|_, w| unsafe { w.bits(1) });
+            if p.gpio0.px_dout().read().pin0().is_low() {
+                p.gpio0.px_dout().write(|w| w.pin0().high());
             } else {
-                p.gpio0.px_dout().modify(|_, w| unsafe { w.bits(0) });
+                p.gpio0.px_dout().write(|w| w.pin0().low());
             }
 
             delay(500_000);
