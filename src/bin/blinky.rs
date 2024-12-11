@@ -21,7 +21,7 @@ fn main() -> ! {
         p.gpio0.px_pud().write(|w| w.pin0().pull_down());
 
         // Enable pull on pin 0
-        p.gpio0.px_pull().write(|w| w.pin0().enable());
+        p.gpio0.px_pull().write(|w| w.pin0().enabled());
 
         loop {
             if p.gpio0.px_dout().read().pin0().is_low() {
