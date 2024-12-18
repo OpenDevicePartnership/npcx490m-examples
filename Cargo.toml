@@ -8,5 +8,9 @@ cortex-m = { version = "0.7.7", features = ["critical-section-single-core", "inl
 cortex-m-rt = "0.7.3"
 defmt = "0.3.8"
 defmt-rtt = "0.4.1"
-npcx490m-pac = { git = "https://github.com/pop-project/npcx490m-pac", features = ["rt", "critical-section"] }
+# npcx490m-pac = { path = "../npcx490m-pac", features = ["rt", "critical-section"] }
+npcx490m-pac = { git = "https://github.com/pop-project/npcx490m-pac", branch = "dev/wouter/interrupts", features = ["rt", "critical-section"] }
 panic-probe = { version = "0.3.2", features = ["print-defmt"] }
+
+[profile.release]
+debug = 2
