@@ -9,17 +9,21 @@ use panic_probe as _;
 use defmt::info;
 use pac::{interrupt, Interrupt};
 
+// MIWU1 - WUI73 - WKINTG_1
+const GROUP: usize = 6;
+const SUBGROUP: u8 = 3;
+
 #[pac::interrupt]
 fn WKINTG_1() {
     let miwu1 = unsafe { pac::Miwu1::steal() };
 
-    if miwu1.wkpndn5().read().bits() & (0b1 << 3) != 0 {
+    if miwu1.wkpndn(GROUP).read().input(SUBGROUP).is_pending() {
         // Turn the LED on
         unsafe { pac::Gpiob::steal() }
             .px_dout()
             .modify(|_, w| w.pin7().low());
 
-        miwu1.wkpcln5().write(|w| unsafe { w.bits(0b1 << 3) });
+        miwu1.wkpcln(GROUP).write(|w| w.input(SUBGROUP).clear());
     }
 
     info!("Interrupt");
@@ -37,37 +41,35 @@ fn main() -> ! {
         p.gpiob.px_dir().modify(|_, w| w.pin7().output());
         p.gpiob.px_pull().modify(|_, w| w.pin7().enabled());
 
-        // MIWU1 - WUI73 - WKINTG_1
-
         // a. Configure the type of input detection for the WUIxy input by writing the WKMDy bit in the WKMODnx register, the
         // WKEDy bit in the WKEDGnx register and/or the WKAEDy bit in the WKAEDGnx register.
         // Set to edge detection (should already be set)
         p.miwu1
-            .wkmodn5()
-            .modify(|r, w| unsafe { w.bits(r.bits() & !(0b1 << 3)) });
+            .wkmodn(GROUP)
+            .modify(|_, w| w.input(SUBGROUP).edge());
 
         // Set to specific edge detection (should already be set)
         p.miwu1
-            .wkaedgn5()
-            .modify(|r, w| unsafe { w.bits(r.bits() & !(0b1 << 3)) });
+            .wkaedgn(GROUP)
+            .modify(|_, w| w.input(SUBGROUP).edge());
 
         // Set to high-to-low-edge detection
         p.miwu1
-            .wkedgn5()
-            .modify(|r, w| unsafe { w.bits(r.bits() | 0b1 << 3) });
+            .wkedgn(GROUP)
+            .modify(|_, w| w.input(SUBGROUP).low_falling());
 
         // Enable the input (should already be set)
         p.miwu1
-            .wkinenn5()
-            .modify(|r, w| unsafe { w.bits(r.bits() | 0b1 << 3) });
+            .wkinenn(GROUP)
+            .modify(|_, w| w.input(SUBGROUP).enabled());
 
         // b. Clear the WKPDy bit in WKPNDnx register associated with the WUIxy input by writing 1 to the relevant bit in the WKPCLnx register.
-        p.miwu1.wkpcln5().write(|w| unsafe { w.bits(0b1 << 3) });
+        p.miwu1.wkpcln(GROUP).write(|w| w.input(SUBGROUP).clear());
 
         // c. Enable wake-up by setting the WKEy bit in WKENnx register associated with the WUIxy input.
         p.miwu1
-            .wkenn5()
-            .modify(|r, w| unsafe { w.bits(r.bits() | (0b1 << 3)) });
+            .wkenn(GROUP)
+            .modify(|_, w| w.input(SUBGROUP).enabled());
 
         // d. Enable the interrupt by setting the relevant bit in NVIC.
         unsafe { pac::NVIC::unmask(Interrupt::WKINTG_1) };
