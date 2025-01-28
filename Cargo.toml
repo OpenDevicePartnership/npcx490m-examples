@@ -11,7 +11,7 @@ defmt-rtt = "0.4.1"
 # npcx490m-pac = { path = "../npcx490m-pac", features = ["rt", "critical-section"] }
 npcx490m-pac = { git = "https://github.com/pop-project/npcx490m-pac", features = ["rt", "critical-section"] }
 # embassy-npcx = { git = "https://github.com/pop-project/embassy-npcx", features = ["rt"] }
-embassy-npcx = { path = "../embassy-npcx", features = ["rt"] }
+embassy-npcx = { path = "../embassy-npcx", features = ["rt", "defmt"] }
 embassy-executor = { git = "https://github.com/embassy-rs/embassy", features = ["task-arena-size-32768", "arch-cortex-m", "executor-thread", "defmt"] }
 embassy-embedded-hal = { git = "https://github.com/embassy-rs/embassy", default-features = false }
 embassy-sync = { git = "https://github.com/embassy-rs/embassy", default-features = false }

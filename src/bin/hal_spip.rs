@@ -6,7 +6,9 @@ use defmt_rtt as _;
 use embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice as MutexSpiDevice;
 use embassy_executor::Spawner;
 use embassy_npcx::{
+    self as hal,
     gpio::{Level, OutputOnly, OutputOpenDrain},
+    interrupt::InterruptExt,
     peripherals::SPIP,
     spip::Spip,
 };
@@ -18,7 +20,12 @@ use panic_probe as _;
 async fn main(_spawner: Spawner) {
     let p = embassy_npcx::init();
 
-    let spip = Spip::new_8bit(p.SPIP, p.PK12, p.PM12, p.PL12, Default::default());
+    unsafe { hal::interrupt::SPIP.enable() };
+
+    let mut config: hal::spip::Config = Default::default();
+    // config.mode.polarity = embedded_hal_async::spi::Polarity::IdleHigh;
+
+    let spip = Spip::new_8bit(p.SPIP, p.PK12, p.PM12, p.PL12, config);
     let spip = Mutex::<NoopRawMutex, Spip<SPIP, u8>>::new(spip);
 
     let cs0: OutputOpenDrain<'_, OutputOnly> =
@@ -34,12 +41,12 @@ async fn main(_spawner: Spawner) {
         let mut buf = [0; 13];
         buf[0] = 0x4B;
         flash0.transfer_in_place(&mut buf).await.unwrap();
-        defmt::info!("flash0 {:?}", buf);
+        defmt::info!("flash0 {:x}", buf);
         delay(5_000_000);
 
-        let mut buf = [0x05, 0x00];
-        flash1.transfer_in_place(&mut buf).await.unwrap();
-        defmt::info!("flash1 {:?}", buf);
-        delay(5_000_000);
+        // let mut buf = [0x05, 0x00];
+        // flash1.transfer_in_place(&mut buf).await.unwrap();
+        // defmt::info!("flash1 {:x}", buf);
+        // delay(5_000_000);
     }
 }
