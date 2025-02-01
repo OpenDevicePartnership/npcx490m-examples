@@ -1,7 +1,7 @@
 # NPCX490M Examples
 
 A collection of examples demonstrating the use of the
-[npcx490m-pac](https://github.com/pop-project/npcx490m-pac) crate.
+[npcx490m-pac](https://github.com/OpenDevicePartnership/npcx490m-pac) crate.
 
 ## Dependencies
 
